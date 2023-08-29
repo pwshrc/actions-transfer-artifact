@@ -1,0 +1,100 @@
+name: Validate Changes
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  determine-version:
+    name: Determine Version with GitVersion
+    runs-on: ubuntu-latest
+    steps:
+    - name: Cache dotnet tools
+      id: cacher
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ env.HOME }}/.dotnet/tools
+          ${{ env.USERPROFILE }}\\.dotnet\\tools
+        key: ${{ runner.os }}-dotnet-tools-${{ hashFiles('**/global.json') }}
+    - name: dotnet tool install -g GitVersion.Tool
+      if: steps.cacher.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: dotnet tool install --global GitVersion.Tool --version 5.12
+    - name: Check out repository full history
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # GitVersion requires the full history to calculate the version.
+    - name: Show GitVersion configuration
+      shell: pwsh
+      run: dotnet-gitversion /showconfig
+    - name: Capture GitVersion configuration
+      shell: pwsh
+      run: |
+        New-Item -Path ./out -Type Directory -Force | Out-Null
+        dotnet-gitversion /showconfig | Out-File -Path ./out/GitVersion.effective.yml -Encoding UTF8
+    - name: Determine version
+      shell: pwsh
+      run: |
+        dotnet-gitversion /output json | Out-File -Path ./out/version.json -Encoding UTF8
+        [int] $gitversionExitCode = $LASTEXITCODE
+        if ($gitversionExitCode -ne 0) {
+          Write-Host "GitVersion failed. Re-running with diagnostic verbosity."
+          dotnet-gitversion /output json /verbosity diagnostic
+          exit $gitversionExitCode
+        }
+    - name: "Create artifact: version.json"
+      uses: actions/upload-artifact@v3
+      with:
+        name: version.json
+        path: ./out/version.json
+        if-no-files-found: error
+
+  create-releasenotes:
+    name: Create Release Notes
+    needs: determine-version
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository full history
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # create-release-notes requires the full history to create the release notes.
+    - name: "Get artifact: version.json"
+      uses: actions/download-artifact@v3
+      with:
+        name: version.json
+        path: ./out/
+    - name: Populate version variables
+      id: gitversion_vars
+      shell: pwsh
+      run: |
+        [object] $version = Get-Content -Path ./out/version.json | ConvertFrom-Json
+        foreach ($key in $version.PSObject.Properties.Name) {
+          echo "::set-output name=$key::$($version.$key)"
+        }
+    - name: Create release notes
+      id: create_release_notes
+      uses: mikepenz/release-changelog-builder-action@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        fromTag: ${{ steps.gitversion_vars.outputs.VersionSourceSha }}
+        toTag: ${{ steps.gitversion_vars.outputs.Sha }}
+        commitMode: true
+        outputFile: ./out/release-notes.md
+    - name: "Create artifact: release-notes.md"
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-notes.md
+        path: ./out/release-notes.md
+        if-no-files-found: error
+
+  test-changes:
+    name: Test Changes
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          echo "LGTM."

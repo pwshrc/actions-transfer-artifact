@@ -11,7 +11,7 @@ jobs:
   begin-release:
     name: Begin Release
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.workflow_run.conclusion == 'success'
     steps:
       - run: echo "Beginning release."
       - name: 'Download artifacts from triggering workflow'

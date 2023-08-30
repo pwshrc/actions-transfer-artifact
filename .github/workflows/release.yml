@@ -24,7 +24,7 @@ jobs:
               run_id: context.payload.workflow_run.id,
             });
             let matchArtifacts = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == 'version.json' || artifact.name == 'release-notes.md';
+              return artifact.name == 'version-json' || artifact.name == 'release-notes';
             });
             let downloadsPromises = matchArtifacts.map(async (artifact) => {
               var blob = await github.rest.actions.downloadArtifact({
@@ -40,22 +40,22 @@ jobs:
             downloads.forEach((download) => {
               fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/${download.name}.zip`, Buffer.from(download.data));
             });
-      - name: Unzip version.json
+      - name: Unzip version-json
         shell: pwsh
-        run: Expand-Archive -Path "version.json.zip" -DestinationPath ./version/
-      - name: Upload version.json
+        run: Expand-Archive -Path "version-json.zip" -DestinationPath ./version-json/
+      - name: Upload version-json
         uses: actions/upload-artifact@v3
         with:
-          name: version.json
-          path: ./version/version.json
+          name: version-json
+          path: ./version-json/version.json
           if-no-files-found: error
-      - name: Unzip release-notes.md
+      - name: Unzip release-notes
         shell: pwsh
-        run: Expand-Archive -Path "release-notes.md.zip" -DestinationPath ./release-notes/
-      - name: Upload release-notes.md
+        run: Expand-Archive -Path "release-notes.zip" -DestinationPath ./release-notes/
+      - name: Upload release-notes
         uses: actions/upload-artifact@v3
         with:
-          name: release-notes.md
+          name: release-notes
           path: ./release-notes/release-notes.md
           if-no-files-found: error
 
@@ -66,10 +66,10 @@ jobs:
     steps:
     - name: Check out repository code
       uses: actions/checkout@v3
-    - name: "Get artifact: version.json"
+    - name: "Get artifact: version-json"
       uses: actions/download-artifact@v3
       with:
-        name: version.json
+        name: version-json
         path: ./out/
     - name: Populate GitVersion variables
       id: gitversion_vars
@@ -79,10 +79,10 @@ jobs:
         foreach ($key in $version.PSObject.Properties.Name) {
           echo "::set-output name=$key::$($version.$key)"
         }
-    - name: "Get artifact: release-notes.md"
+    - name: "Get artifact: release-notes"
       uses: actions/download-artifact@v3
       with:
-        name: release-notes.md
+        name: release-notes
         path: ./out/
     - name: Publish GitHub release
       id: publish_github_release

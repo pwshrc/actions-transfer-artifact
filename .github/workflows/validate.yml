@@ -45,10 +45,10 @@ jobs:
           dotnet-gitversion /output json /verbosity diagnostic
           exit $gitversionExitCode
         }
-    - name: "Create artifact: version.json"
+    - name: "Create artifact: version-json"
       uses: actions/upload-artifact@v3
       with:
-        name: version.json
+        name: version-json
         path: ./out/version.json
         if-no-files-found: error
 
@@ -61,10 +61,10 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0  # create-release-notes requires the full history to create the release notes.
-    - name: "Get artifact: version.json"
+    - name: "Get artifact: version-json"
       uses: actions/download-artifact@v3
       with:
-        name: version.json
+        name: version-json
         path: ./out/
     - name: Populate version variables
       id: gitversion_vars
@@ -84,10 +84,10 @@ jobs:
         toTag: ${{ steps.gitversion_vars.outputs.Sha }}
         commitMode: true
         outputFile: ./out/release-notes.md
-    - name: "Create artifact: release-notes.md"
+    - name: "Create artifact: release-notes"
       uses: actions/upload-artifact@v3
       with:
-        name: release-notes.md
+        name: release-notes
         path: ./out/release-notes.md
         if-no-files-found: error
 

@@ -44,7 +44,7 @@ jobs:
         shell: pwsh
         run: Expand-Archive -Path "version-json.zip" -DestinationPath ./version-json/
       - name: Upload version-json
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: version-json
           path: ./version-json/version.json
@@ -53,7 +53,7 @@ jobs:
         shell: pwsh
         run: Expand-Archive -Path "release-notes.zip" -DestinationPath ./release-notes/
       - name: Upload release-notes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-notes
           path: ./release-notes/release-notes.md

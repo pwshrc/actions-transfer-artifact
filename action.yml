@@ -38,7 +38,7 @@ runs:
     shell: pwsh
     run: Expand-Archive -Path "${{ inputs.name }}.zip" -DestinationPath ./${{ inputs.name }}/
   - name: "Upload '/${{ inputs.name }}'"
-    uses: actions/upload-artifact@v3
+    uses: actions/upload-artifact@v4
     with:
       name: "${{ inputs.name }}"
       path: "./${{ inputs.name }}/**/*.*"

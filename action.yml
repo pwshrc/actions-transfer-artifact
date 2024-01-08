@@ -41,5 +41,5 @@ runs:
     uses: actions/upload-artifact@v3
     with:
       name: "${{ inputs.name }}"
-      path: "./${{ inputs.name }}/**/*.*"
+      path: "./${{ inputs.name }}/"
       if-no-files-found: error

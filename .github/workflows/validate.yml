@@ -76,7 +76,7 @@ jobs:
         }
     - name: Create release notes
       id: create_release_notes
-      uses: mikepenz/release-changelog-builder-action@v4
+      uses: mikepenz/release-changelog-builder-action@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:

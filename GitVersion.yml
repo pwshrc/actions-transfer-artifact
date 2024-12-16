@@ -9,3 +9,4 @@ assembly-versioning-scheme: MajorMinorPatch
 branches:
   main:
     mode: ContinuousDeployment
+next-version: 0.5.0

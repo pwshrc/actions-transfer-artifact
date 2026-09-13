@@ -49,7 +49,7 @@ jobs:
           exit $gitversionExitCode
         }
     - name: "Create artifact: version-json"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: version-json
         path: ./out/version.json
@@ -65,7 +65,7 @@ jobs:
       with:
         fetch-depth: 0  # create-release-notes requires the full history to create the release notes.
     - name: "Get artifact: version-json"
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: version-json
         path: ./out/
@@ -88,7 +88,7 @@ jobs:
         commitMode: true
         outputFile: ./out/release-notes.md
     - name: "Create artifact: release-notes"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: release-notes
         path: ./out/release-notes.md
